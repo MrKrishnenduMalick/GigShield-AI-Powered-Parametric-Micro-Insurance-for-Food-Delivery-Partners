@@ -1,0 +1,1 @@
+# GigShield-AI-Powered-Parametric-Micro-Insurance-for-Food-Delivery-Partners
