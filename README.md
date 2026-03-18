@@ -7,7 +7,7 @@
 
 ## Complete Project Document
 
-[GigShield — Full Phase 1 Document (PDF)](.docs/GigSheild_Documentation.pdf)
+[GigShield — Full Phase 1 Document (PDF)](docs/GigSheild_Documentation.pdf)
 
 The PDF covers everything — problem statement, persona, parametric triggers,
 weekly pricing model, AI/ML models, tech stack, and 6-week development plan.
