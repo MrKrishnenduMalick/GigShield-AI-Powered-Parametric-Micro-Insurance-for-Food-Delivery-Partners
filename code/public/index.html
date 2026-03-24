@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GigShield — Income Protection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg: #070B14;
+  --surface: #0D1526;
+  --card: #111827;
+  --card2: #161F33;
+  --border: rgba(99,120,180,0.14);
+  --indigo: #6366F1;
+  --indigo-light: #818CF8;
+  --indigo-dim: rgba(99,102,241,0.15);
+  --green: #10B981;
+  --green-dim: rgba(16,185,129,0.15);
+  --red: #F43F5E;
+  --red-dim: rgba(244,63,94,0.15);
+  --amber: #F59E0B;
+  --amber-dim: rgba(245,158,11,0.15);
+  --text: #F1F5F9;
+  --muted: #64748B;
+  --muted2: #94A3B8;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --glow: 0 0 40px rgba(99,102,241,0.12);
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ambient background glow */
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px; left: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── LAYOUT ────────────────────────── */
+.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 28px 16px;
+  position: sticky; top: 0; height: 100vh;
+  overflow-y: auto;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display); font-size: 1.35rem; font-weight: 800;
+  color: var(--text); margin-bottom: 36px; padding: 0 8px;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: var(--indigo);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 20px rgba(99,102,241,0.4);
+}
+
+.nav-section { font-size: 0.65rem; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; padding: 0 8px; margin-bottom: 8px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all .2s; color: var(--muted2);
+  font-size: 0.875rem; font-weight: 500; margin-bottom: 2px;
+}
+.nav-item:hover { background: var(--indigo-dim); color: var(--text); }
+.nav-item.active { background: var(--indigo-dim); color: var(--indigo-light); }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  margin-top: auto; padding: 16px 8px 0;
+  border-top: 1px solid var(--border);
+}
+.worker-pill {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.8rem;
+}
+.worker-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--indigo), #8B5CF6);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.75rem; flex-shrink: 0;
+}
+.worker-info small { color: var(--muted); display: block; font-size: 0.7rem; }
+
+/* ── MAIN ────────────────────────────── */
+.main { flex: 1; padding: 32px 28px; max-width: 1100px; overflow-y: auto; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── TOP BAR ─────────────────────────── */
+.topbar {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 32px;
+}
+.topbar-left h1 {
+  font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
+  line-height: 1.2;
+}
+.topbar-left p { color: var(--muted2); font-size: 0.875rem; margin-top: 4px; }
+.week-badge {
+  background: var(--indigo-dim); color: var(--indigo-light);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 0.75rem; font-weight: 600; font-family: var(--font-display);
+  white-space: nowrap;
+}
+
+/* ── CARDS ──────────────────────────── */
+.cards-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+  margin-bottom: 24px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: transform .2s, border-color .2s;
+  position: relative; overflow: hidden;
+}
+.card:hover { transform: translateY(-2px); border-color: rgba(99,102,241,0.3); }
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent-color, var(--indigo));
+  opacity: 0.6;
+}
+.card.green-accent { --accent-color: var(--green); }
+.card.red-accent { --accent-color: var(--red); }
+.card.amber-accent { --accent-color: var(--amber); }
+
+.card-label {
+  font-size: 0.7rem; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.card-value {
+  font-family: var(--font-display); font-size: 2rem; font-weight: 700;
+  line-height: 1; margin-bottom: 6px;
+}
+.card-sub { font-size: 0.75rem; color: var(--muted2); }
+
+/* Risk badge */
+.risk-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 700; font-family: var(--font-display);
+  letter-spacing: .05em;
+}
+.risk-low { background: var(--green-dim); color: var(--green); }
+.risk-medium { background: var(--amber-dim); color: var(--amber); }
+.risk-high { background: var(--red-dim); color: var(--red); }
+.risk-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+/* ── SHIFT CONTROL ──────────────────── */
+.shift-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+}
+.shift-status {
+  display: flex; align-items: center; gap: 12px;
+}
+.status-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--muted); transition: background .3s;
+}
+.status-dot.active {
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.5 } }
+.status-label { font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; }
+.status-sub { font-size: 0.75rem; color: var(--muted2); }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-weight: 600; font-size: 0.875rem;
+  cursor: pointer; border: none; transition: all .2s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--indigo);
+  color: white;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+}
+.btn-primary:hover { background: var(--indigo-light); box-shadow: 0 4px 28px rgba(99,102,241,0.5); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-outline {
+  background: transparent; color: var(--muted2);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--indigo); color: var(--indigo-light); }
+.btn-outline:disabled { opacity: .3; cursor: not-allowed; }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { background: #059669; }
+.btn-red { background: var(--red); color: white; }
+.btn-red:hover { background: #E11D48; }
+.btn-amber { background: var(--amber); color: #000; }
+.btn-amber:hover { background: #D97706; }
+.btn-sm { padding: 7px 14px; font-size: 0.8rem; }
+
+/* ── WEATHER STRIP ──────────────────── */
+.weather-strip {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 24px;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+.weather-city { font-family: var(--font-display); font-weight: 700; font-size: 1rem; }
+.weather-meta { font-size: 0.75rem; color: var(--muted2); margin-top: 2px; }
+.weather-stat {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(99,102,241,0.06); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 16px; min-width: 80px;
+}
+.weather-stat .ws-val { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+.weather-stat .ws-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+.trigger-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  background: var(--red-dim); color: var(--red);
+  border: 1px solid rgba(244,63,94,0.25);
+  font-size: 0.75rem; font-weight: 700;
+  animation: blink 1.5s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* ── CLAIMS TABLE ───────────────────── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+.claims-list { display: flex; flex-direction: column; gap: 8px; }
+.claim-item {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  transition: border-color .2s;
+}
+.claim-item:hover { border-color: rgba(99,102,241,0.3); }
+.claim-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.claim-icon.rain { background: rgba(99,102,241,0.15); }
+.claim-icon.heat { background: rgba(245,158,11,0.15); }
+.claim-icon.aqi  { background: rgba(244,63,94,0.15); }
+.claim-icon.flood { background: rgba(6,182,212,0.15); }
+.claim-details { flex: 1; }
+.claim-trigger { font-weight: 600; font-size: 0.875rem; }
+.claim-meta { font-size: 0.72rem; color: var(--muted2); margin-top: 2px; }
+.claim-amount { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+.pill {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: .04em;
+  font-family: var(--font-display);
+}
+.pill-approved { background: var(--green-dim); color: var(--green); }
+.pill-paid { background: rgba(99,102,241,0.15); color: var(--indigo-light); }
+.pill-blocked { background: var(--red-dim); color: var(--red); }
+.pill-review { background: var(--amber-dim); color: var(--amber); }
+
+/* ── RISK BREAKDOWN ─────────────────── */
+.risk-bar-wrap { margin-bottom: 8px; }
+.risk-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.72rem; color: var(--muted2); margin-bottom: 4px;
+}
+.risk-bar-track {
+  height: 4px; background: var(--card2); border-radius: 999px; overflow: hidden;
+}
+.risk-bar-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--indigo), var(--indigo-light));
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── NOTIFICATION ───────────────────── */
+.notif-container {
+  position: fixed; top: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 9999; pointer-events: none;
+}
+.notif {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  min-width: 300px; max-width: 360px;
+  display: flex; align-items: flex-start; gap: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), var(--glow);
+  animation: slideIn .3s cubic-bezier(.4,0,.2,1);
+  pointer-events: all;
+}
+.notif.exit { animation: slideOut .3s ease forwards; }
+@keyframes slideIn { from { opacity:0; transform:translateX(100%) } to { opacity:1; transform:translateX(0) } }
+@keyframes slideOut { from { opacity:1; transform:translateX(0) } to { opacity:0; transform:translateX(100%) } }
+.notif-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.notif-content { flex: 1; }
+.notif-title { font-weight: 700; font-size: 0.85rem; margin-bottom: 2px; font-family: var(--font-display); }
+.notif-msg { font-size: 0.78rem; color: var(--muted2); }
+.notif-close { cursor: pointer; color: var(--muted); font-size: 14px; flex-shrink: 0; }
+.notif-close:hover { color: var(--text); }
+
+/* ── REGISTRATION MODAL ─────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(7,11,20,0.85);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+  width: 100%; max-width: 460px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5), var(--glow);
+  animation: modalIn .3s cubic-bezier(.4,0,.2,1);
+}
+@keyframes modalIn { from { opacity:0; transform:scale(.95) translateY(10px) } to { opacity:1; transform:scale(1) } }
+.modal-title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+.modal-sub { color: var(--muted2); font-size: 0.85rem; margin-bottom: 24px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em; }
+.form-input, .form-select {
+  width: 100%; padding: 10px 14px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: var(--font-body); font-size: 0.9rem;
+  transition: border-color .2s; outline: none;
+}
+.form-input:focus, .form-select:focus { border-color: var(--indigo); }
+.form-select option { background: var(--card2); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── PAYOUT SECTION ─────────────────── */
+.payout-card {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(16,185,129,0.08) 100%);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: var(--radius); padding: 24px;
+  margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.payout-info h3 { font-family: var(--font-display); font-size: 1rem; margin-bottom: 4px; }
+.payout-info p { font-size: 0.8rem; color: var(--muted2); }
+.payout-amount { font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: var(--green); }
+
+/* ── SIMULATE ROW ───────────────────── */
+.simulate-row {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;
+}
+
+/* ── POLICY DETAIL ──────────────────── */
+.policy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.policy-item {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 16px;
+}
+.policy-item .pi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.policy-item .pi-val { font-family: var(--font-display); font-weight: 600; font-size: 1rem; }
+
+/* ── EMPTY STATE ────────────────────── */
+.empty-state {
+  text-align: center; padding: 48px 24px; color: var(--muted2);
+}
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+.empty-state p { font-size: 0.875rem; }
+
+/* ── SCROLLBAR ──────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── RESPONSIVE ─────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .cards-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .policy-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .cards-grid { grid-template-columns: 1fr; }
+}
+
+/* ── LOADING SPINNER ────────────────── */
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white; border-radius: 50%;
+  animation: spin .6s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── DIVIDER ────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+</style>
+</head>
+<body>
+
+<!-- Notification container -->
+<div class="notif-container" id="notifContainer"></div>
+
+<!-- Registration Modal -->
+<div class="modal-overlay" id="regModal">
+  <div class="modal">
+    <div class="modal-title">🛡️ Join GigShield</div>
+    <div class="modal-sub">AI-powered income protection for delivery partners</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="reg-name" placeholder="Raju Sharma" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" id="reg-phone" placeholder="9876543210" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <select class="form-select" id="reg-city">
+          <option>Mumbai</option><option>Delhi</option><option>Kolkata</option>
+          <option>Bangalore</option><option>Chennai</option><option>Hyderabad</option><option>Noida</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Zone</label>
+        <select class="form-select" id="reg-zone">
+          <option>Bandra</option><option>Andheri</option><option>Salt Lake</option>
+          <option>T Nagar</option><option>Koramangala</option><option>Sector 18</option>
+          <option>Connaught Place</option><option>Jubilee Hills</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Vehicle</label>
+        <select class="form-select" id="reg-vehicle">
+          <option>Motorcycle</option><option>Scooter</option><option>Bicycle</option><option>Car</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Platform</label>
+        <select class="form-select" id="reg-platform">
+          <option>Swiggy</option><option>Zomato</option><option>Blinkit</option><option>Zepto</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Insurance Plan</label>
+      <select class="form-select" id="reg-plan">
+        <option value="Basic">Basic — ₹20/week · Cap ₹150</option>
+        <option value="Standard" selected>Standard — ₹30/week · Cap ₹200</option>
+        <option value="Premium">Premium — ₹50/week · Cap ₹300</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:4px;" id="regBtn" onclick="register()">
+      Activate Protection
+    </button>
+    <div style="text-align:center; margin-top:16px; font-size:0.8rem; color:var(--muted2);">
+      Already registered? <span style="color:var(--indigo-light); cursor:pointer;" onclick="demoLogin()">Demo Login</span>
+    </div>
+  </div>
+</div>
+
+<!-- App Shell -->
+<div class="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      GigShield
+    </div>
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="switchPage('dashboard', this)">
+      <span class="icon">◈</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="switchPage('claims', this)">
+      <span class="icon">◉</span> My Claims
+    </div>
+    <div class="nav-item" onclick="switchPage('policy', this)">
+      <span class="icon">◎</span> Policy
+    </div>
+    <div class="nav-section" style="margin-top:20px;">Tools</div>
+    <div class="nav-item" onclick="switchPage('simulate', this)">
+      <span class="icon">⚡</span> Simulator
+    </div>
+    <div class="sidebar-footer">
+      <div class="worker-pill">
+        <div class="worker-avatar" id="sidebarAvatar">?</div>
+        <div>
+          <div id="sidebarName" style="font-weight:600; font-size:0.82rem;">Not logged in</div>
+          <small id="sidebarPlan" class="worker-info">—</small>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 id="welcomeMsg">Welcome back 👋</h1>
+          <p>Your income protection dashboard</p>
+        </div>
+        <div class="week-badge" id="weekBadge">Week loading…</div>
+      </div>
+
+      <!-- Weather Strip -->
+      <div class="weather-strip" id="weatherStrip">
+        <div>
+          <div class="weather-city" id="wCity">—</div>
+          <div class="weather-meta" id="wMeta">Fetching live weather…</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;" id="weatherStats"></div>
+        <div id="activeTriggers" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="cards-grid">
+        <div class="card green-accent">
+          <div class="card-label">📈 Predicted Earnings</div>
+          <div class="card-value" id="cardEarnings">₹—</div>
+          <div class="card-sub">This week (Sat–Fri)</div>
+        </div>
+        <div class="card">
+          <div class="card-label">💎 Weekly Premium</div>
+          <div class="card-value" id="cardPremium">₹—</div>
+          <div class="card-sub" id="cardPremiumSub">AI-calculated</div>
+        </div>
+        <div class="card amber-accent">
+          <div class="card-label">⚠️ Risk Score</div>
+          <div class="card-value" id="cardRisk">—</div>
+          <div class="card-sub">
+            <span class="risk-badge risk-low" id="riskBadge">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shift Control -->
+      <div class="shift-section">
+        <div class="shift-status">
+          <div class="status-dot" id="statusDot"></div>
+          <div>
+            <div class="status-label" id="statusLabel">Shift Inactive</div>
+            <div class="status-sub" id="statusSub">Start shift to enable coverage</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnStart" onclick="startShift()">▶ Start Shift</button>
+          <button class="btn btn-outline" id="btnEnd" disabled onclick="endShift()">■ End Shift</button>
+        </div>
+      </div>
+
+      <!-- Weekly Payout Banner -->
+      <div class="payout-card">
+        <div class="payout-info">
+          <h3>Weekly Payout Pool</h3>
+          <p>Approved claims paid every Friday 23:59 via UPI</p>
+        </div>
+        <div>
+          <div class="payout-amount" id="payoutPool">₹0</div>
+          <div style="font-size:0.72rem; color:var(--muted2); text-align:right;">this week</div>
+        </div>
+        <button class="btn btn-green btn-sm" onclick="runPayout()">💸 Run Payout</button>
+      </div>
+
+      <!-- Recent Claims -->
+      <div class="section-header">
+        <div class="section-title">Recent Claims</div>
+        <button class="btn btn-outline btn-sm" onclick="switchPage('claims', document.querySelector('[onclick*=\"claims\"]'))">View All</button>
+      </div>
+      <div class="claims-list" id="dashClaims">
+        <div class="empty-state"><div class="empty-icon">📋</div><p>No claims yet. Start a shift to get covered.</p></div>
+      </div>
+    </div>
+
+    <!-- ── CLAIMS PAGE ── -->
+    <div class="page" id="page-claims">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>My Claims</h1>
+          <p>All disruption-triggered payouts</p>
+        </div>
+      </div>
+      <div class="claims-list" id="allClaims">
+        <div class="empty-state"><div class="empty-icon">📋</div><p>No claims yet.</p></div>
+      </div>
+    </div>
+
+    <!-- ── POLICY PAGE ── -->
+    <div class="page" id="page-policy">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>Insurance Policy</h1>
+          <p>Your active coverage details</p>
+        </div>
+      </div>
+      <div class="policy-grid" id="policyGrid">
+        <div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">📄</div><p>Policy loading…</p></div>
+      </div>
+      <div class="section-title" style="margin-bottom:14px;">Risk Score Breakdown</div>
+      <div id="riskBreakdown"></div>
+    </div>
+
+    <!-- ── SIMULATOR PAGE ── -->
+    <div class="page" id="page-simulate">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>Trigger Simulator</h1>
+          <p>Test parametric trigger scenarios</p>
+        </div>
+      </div>
+      <div class="simulate-row">
+        <button class="btn btn-primary" onclick="simulateTrigger('rain')">🌧️ Heavy Rain (85 mm/hr)</button>
+        <button class="btn btn-amber" onclick="simulateTrigger('heat')">🌡️ Extreme Heat (43°C)</button>
+        <button class="btn btn-red" onclick="simulateTrigger('aqi')">😷 Severe AQI (320)</button>
+        <button class="btn btn-outline" onclick="simulateTrigger('flood')">🌊 Urban Flood Alert</button>
+      </div>
+      <div class="divider"></div>
+      <div class="section-title" style="margin-bottom:16px;">Simulation Log</div>
+      <div id="simLog" style="display:flex; flex-direction:column; gap:10px;">
+        <div class="empty-state"><div class="empty-icon">⚡</div><p>Click a trigger above to simulate a claim scenario.</p></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────
+const API = '/api';
+let state = {
+  workerId: null,
+  workerName: '',
+  city: '',
+  plan: '',
+  shiftActive: false,
+  weather: null,
+  policy: null,
+};
+
+// ─── UTILS ───────────────────────────────────────────────────────
+function notify(icon, title, msg, color = 'var(--indigo)') {
+  const c = document.getElementById('notifContainer');
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.innerHTML = `
+    <div class="notif-icon">${icon}</div>
+    <div class="notif-content">
+      <div class="notif-title" style="color:${color}">${title}</div>
+      <div class="notif-msg">${msg}</div>
+    </div>
+    <div class="notif-close" onclick="this.parentElement.remove()">✕</div>
+  `;
+  c.appendChild(el);
+  setTimeout(() => { el.classList.add('exit'); setTimeout(() => el.remove(), 300); }, 5000);
+}
+
+function fmt(n) { return '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits:0}); }
+
+async function api(method, path, body) {
+  try {
+    const r = await fetch(API + path, {
+      method, headers: {'Content-Type':'application/json'},
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || JSON.stringify(d));
+    return d;
+  } catch(e) {
+    // If backend not running, use demo mode
+    console.warn('API unavailable, demo mode:', e.message);
+    return null;
+  }
+}
+
+function switchPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (name === 'claims') loadClaims();
+  if (name === 'policy') renderPolicy();
+}
+
+// ─── REGISTRATION ────────────────────────────────────────────────
+async function register() {
+  const btn = document.getElementById('regBtn');
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  if (!name || !phone) { notify('⚠️','Missing Info','Please fill name and phone.','var(--amber)'); return; }
+
+  btn.innerHTML = '<span class="spinner"></span> Activating…';
+  btn.disabled = true;
+
+  const payload = {
+    name, phone,
+    city: document.getElementById('reg-city').value,
+    zone: document.getElementById('reg-zone').value,
+    vehicle_type: document.getElementById('reg-vehicle').value,
+    platform: document.getElementById('reg-platform').value,
+    plan: document.getElementById('reg-plan').value.split(' ')[0],
+  };
+
+  let data = await api('POST', '/register', payload);
+
+  if (!data) {
+    // Demo mode fallback
+    data = demoRegister(payload);
+  }
+
+  if (data.success) {
+    state.workerId = data.worker_id;
+    state.workerName = name;
+    state.city = payload.city;
+    state.plan = payload.plan;
+    localStorage.setItem('gigshield_worker', JSON.stringify({
+      id: data.worker_id, name, city: payload.city,
+      zone: payload.zone, plan: payload.plan, phone
+    }));
+    document.getElementById('regModal').classList.add('hidden');
+    notify('🛡️','Coverage Active!', `Welcome, ${name}! ${payload.plan} plan activated.`, 'var(--green)');
+    updateSidebar();
+    loadDashboard();
+  } else {
+    notify('❌','Registration Failed', data.message || 'Try again.', 'var(--red)');
+    btn.innerHTML = 'Activate Protection'; btn.disabled = false;
+  }
+}
+
+function demoLogin() {
+  const saved = JSON.parse(localStorage.getItem('gigshield_worker') || 'null');
+  if (saved) {
+    state.workerId = saved.id; state.workerName = saved.name;
+    state.city = saved.city; state.plan = saved.plan;
+    document.getElementById('regModal').classList.add('hidden');
+    updateSidebar(); loadDashboard();
+    notify('👋','Welcome back!', `Logged in as ${saved.name}`, 'var(--indigo-light)');
+  } else {
+    // Demo without registration
+    state.workerId = 1; state.workerName = 'Raju Sharma';
+    state.city = 'Mumbai'; state.plan = 'Standard';
+    document.getElementById('regModal').classList.add('hidden');
+    updateSidebar(); loadDashboard();
+    notify('👋','Demo Mode', 'Running with simulated data.', 'var(--indigo-light)');
+  }
+}
+
+function demoRegister(payload) {
+  const id = Date.now() % 10000;
+  return {
+    success: true, worker_id: id,
+    policy: { plan: payload.plan, dynamic_premium: 36.6, weekly_cap: 200, predicted_earnings: 3800, risk_score: 52, risk_level: 'MEDIUM' }
+  };
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────
+function updateSidebar() {
+  document.getElementById('sidebarName').textContent = state.workerName || '—';
+  document.getElementById('sidebarPlan').textContent = (state.plan || '—') + ' Plan';
+  document.getElementById('sidebarAvatar').textContent = (state.workerName || '?')[0].toUpperCase();
+  document.getElementById('welcomeMsg').textContent = `Welcome, ${state.workerName} 👋`;
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────
+async function loadDashboard() {
+  // Week badge
+  const now = new Date();
+  const week = getWeekLabel(now);
+  document.getElementById('weekBadge').textContent = week;
+
+  // Fetch policy
+  let pol = await api('GET', `/policy/${state.workerId}`);
+  if (!pol) pol = demoPolicy();
+  state.policy = pol;
+  renderPolicyCards(pol);
+
+  // Fetch weather
+  fetchWeather();
+
+  // Load claims
+  loadDashClaims();
+  loadWeekTotal();
+}
+
+function getWeekLabel(d) {
+  const start = new Date(d); start.setDate(d.getDate() - d.getDay() + 6);
+  const end = new Date(start); end.setDate(start.getDate() + 6);
+  return `Sat ${start.getDate()}/${start.getMonth()+1} – Fri ${end.getDate()}/${end.getMonth()+1}`;
+}
+
+function demoPolicy() {
+  return {
+    plan: state.plan || 'Standard',
+    dynamic_premium: 36.60, base_premium: 30,
+    weekly_cap: 200, predicted_earnings: 3800,
+    risk_score: 52, zone_risk: 1.20, seasonal_factor: 1.10, loyalty_discount: 0,
+    city: state.city, zone: 'Bandra', vehicle_type: 'Motorcycle', platform: 'Swiggy',
+    risk_breakdown: { zone_disruption_history: 18, seasonal_factor: 12, live_weather: 6, vehicle_exposure: 9, platform_pressure: 7 }
+  };
+}
+
+function renderPolicyCards(pol) {
+  document.getElementById('cardEarnings').textContent = fmt(pol.predicted_earnings || 3800);
+  document.getElementById('cardPremium').textContent = fmt(pol.dynamic_premium || 30);
+  document.getElementById('cardPremiumSub').textContent =
+    `₹${pol.base_premium} base × ${pol.zone_risk} zone × ${pol.seasonal_factor} seasonal`;
+
+  const score = pol.risk_score || 50;
+  document.getElementById('cardRisk').textContent = score;
+  const badge = document.getElementById('riskBadge');
+  if (score < 35) { badge.textContent = '● LOW'; badge.className = 'risk-badge risk-low'; }
+  else if (score < 65) { badge.textContent = '● MEDIUM'; badge.className = 'risk-badge risk-medium'; }
+  else { badge.textContent = '● HIGH'; badge.className = 'risk-badge risk-high'; }
+}
+
+// ─── WEATHER ─────────────────────────────────────────────────────
+async function fetchWeather() {
+  const city = state.city || 'Mumbai';
+  document.getElementById('wCity').textContent = city;
+
+  let weather = await api('GET', `/weather/${city}`).catch(() => null);
+  if (!weather) weather = demoWeather(city);
+  state.weather = weather;
+  renderWeather(weather);
+}
+
+function demoWeather(city) {
+  const map = {
+    Mumbai: { rain_mm: 5, temp_celsius: 30, aqi: 85, condition: 'Partly Cloudy' },
+    Delhi: { rain_mm: 0, temp_celsius: 38, aqi: 210, condition: 'Hazy' },
+    Kolkata: { rain_mm: 8, temp_celsius: 31, aqi: 120, condition: 'Humid' },
+    Bangalore: { rain_mm: 5, temp_celsius: 26, aqi: 75, condition: 'Cloudy' },
+    Chennai: { rain_mm: 2, temp_celsius: 34, aqi: 90, condition: 'Sunny' },
+    Hyderabad: { rain_mm: 1, temp_celsius: 35, aqi: 95, condition: 'Clear' },
+    Noida: { rain_mm: 0, temp_celsius: 37, aqi: 195, condition: 'Hazy' },
+  };
+  return { ...(map[city] || map.Mumbai), source: 'demo' };
+}
+
+function renderWeather(w) {
+  document.getElementById('wMeta').textContent =
+    `${w.condition} · Source: ${w.source === 'live' ? '🟢 Live API' : w.source === 'mock' ? '🟡 Server Mock' : '⚪ Demo'}`;
+  document.getElementById('weatherStats').innerHTML = `
+    <div class="weather-stat"><div class="ws-val">${w.rain_mm} mm</div><div class="ws-lbl">Rain/hr</div></div>
+    <div class="weather-stat"><div class="ws-val">${w.temp_celsius}°C</div><div class="ws-lbl">Temp</div></div>
+    <div class="weather-stat"><div class="ws-val">${w.aqi}</div><div class="ws-lbl">AQI</div></div>
+  `;
+  const triggers = evaluateTriggers(w);
+  const tc = document.getElementById('activeTriggers');
+  if (triggers.length) {
+    tc.innerHTML = triggers.map(t =>
+      `<div class="trigger-badge">⚡ ${t.label} ALERT</div>`
+    ).join('');
+  } else {
+    tc.innerHTML = '<div style="font-size:.75rem;color:var(--muted2);">No active triggers</div>';
+  }
+}
+
+function evaluateTriggers(w) {
+  const triggers = [];
+  if (w.rain_mm > 150) triggers.push({type:'URBAN_FLOOD', label:'Urban Flood'});
+  else if (w.rain_mm > 80) triggers.push({type:'HEAVY_RAIN', label:'Heavy Rain'});
+  else if (w.rain_mm > 40) triggers.push({type:'MODERATE_RAIN', label:'Moderate Rain'});
+  if (w.temp_celsius > 42) triggers.push({type:'EXTREME_HEAT', label:'Extreme Heat'});
+  if (w.aqi > 300) triggers.push({type:'SEVERE_AQI', label:'Severe AQI'});
+  return triggers;
+}
+
+// ─── SHIFT ───────────────────────────────────────────────────────
+async function startShift() {
+  const btn = document.getElementById('btnStart');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+
+  let res = await api('POST', '/start-shift', { worker_id: state.workerId });
+  if (!res) res = { success: true, shift_id: Date.now() };
+
+  if (res.success) {
+    state.shiftActive = true;
+    document.getElementById('statusDot').classList.add('active');
+    document.getElementById('statusLabel').textContent = 'Shift Active';
+    document.getElementById('statusSub').textContent = 'GPS tracking — you are covered';
+    document.getElementById('btnEnd').disabled = false;
+    btn.innerHTML = '▶ Start Shift'; btn.disabled = true;
+    notify('🟢', 'Shift Started', 'GigShield is monitoring your route.', 'var(--green)');
+  }
+}
+
+async function endShift() {
+  const btn = document.getElementById('btnEnd');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+
+  let res = await api('POST', '/end-shift', { worker_id: state.workerId });
+  if (!res) res = { success: true, active_minutes: 230, verdict: 'AUTO_APPROVED', fraud_score: 12 };
+
+  state.shiftActive = false;
+  document.getElementById('statusDot').classList.remove('active');
+  document.getElementById('statusLabel').textContent = 'Shift Ended';
+  document.getElementById('statusSub').textContent = `Active: ${res.active_minutes || 0} min · Fraud: ${res.fraud_score || 0}/100`;
+  document.getElementById('btnStart').disabled = false;
+  btn.innerHTML = '■ End Shift';
+  notify('⏹️', 'Shift Ended', `${res.active_minutes || 0} min active · ${res.verdict || 'APPROVED'}`, 'var(--muted2)');
+}
+
+// ─── CLAIMS ──────────────────────────────────────────────────────
+const TRIGGER_ICONS = {
+  HEAVY_RAIN:'🌧️', MODERATE_RAIN:'🌦️', URBAN_FLOOD:'🌊',
+  EXTREME_HEAT:'🌡️', SEVERE_AQI:'😷', SHORT_SHIFT:'⏱️'
+};
+const TRIGGER_CLASS = {
+  HEAVY_RAIN:'rain', MODERATE_RAIN:'rain', URBAN_FLOOD:'flood',
+  EXTREME_HEAT:'heat', SEVERE_AQI:'aqi'
+};
+
+function renderClaim(c) {
+  const icon = TRIGGER_ICONS[c.trigger_type] || '⚡';
+  const cls = TRIGGER_CLASS[c.trigger_type] || 'rain';
+  const statusCls = { APPROVED:'pill-approved', PAID:'pill-paid', BLOCKED:'pill-blocked', MANUAL_REVIEW:'pill-review' }[c.status] || 'pill-approved';
+  const date = new Date(c.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  return `
+    <div class="claim-item">
+      <div class="claim-icon ${cls}">${icon}</div>
+      <div class="claim-details">
+        <div class="claim-trigger">${c.trigger_type.replace(/_/g,' ')}</div>
+        <div class="claim-meta">${date} · ${c.hours_disrupted}h disrupted · Fraud: ${c.fraud_score}/100</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="claim-amount">${fmt(c.final_amount)}</div>
+        <div class="pill ${statusCls}">${c.status}</div>
+      </div>
+    </div>`;
+}
+
+async function loadDashClaims() {
+  let claims = await api('GET', `/claims/${state.workerId}`);
+  if (!claims) claims = demoClaims();
+  const el = document.getElementById('dashClaims');
+  if (!claims.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No claims yet. Start a shift to get covered.</p></div>';
+    return;
+  }
+  el.innerHTML = claims.slice(0,4).map(renderClaim).join('');
+}
+
+async function loadClaims() {
+  let claims = await api('GET', `/claims/${state.workerId}`);
+  if (!claims) claims = demoClaims();
+  const el = document.getElementById('allClaims');
+  if (!claims.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>No claims yet.</p></div>';
+    return;
+  }
+  el.innerHTML = claims.map(renderClaim).join('');
+}
+
+async function loadWeekTotal() {
+  let data = await api('GET', `/claims/${state.workerId}/week`);
+  if (!data) data = { week_total: 0 };
+  document.getElementById('payoutPool').textContent = fmt(data.week_total || 0);
+}
+
+function demoClaims() {
+  return [
+    { trigger_type:'HEAVY_RAIN', hours_disrupted:1.5, final_amount:475, status:'APPROVED', fraud_score:12, created_at: new Date().toISOString() },
+    { trigger_type:'URBAN_FLOOD', hours_disrupted:2.0, final_amount:200, status:'PAID', fraud_score:8, created_at: new Date(Date.now()-86400000).toISOString() },
+  ];
+}
+
+// ─── POLICY PAGE ─────────────────────────────────────────────────
+function renderPolicy() {
+  const pol = state.policy || demoPolicy();
+  const plan_caps = { Basic: 150, Standard: 200, Premium: 300 };
+  document.getElementById('policyGrid').innerHTML = `
+    <div class="policy-item"><div class="pi-label">Plan</div><div class="pi-val">${pol.plan || '—'}</div></div>
+    <div class="policy-item"><div class="pi-label">Weekly Premium</div><div class="pi-val">${fmt(pol.dynamic_premium || 0)}</div></div>
+    <div class="policy-item"><div class="pi-label">Weekly Cap</div><div class="pi-val">${fmt(pol.weekly_cap || 200)}</div></div>
+    <div class="policy-item"><div class="pi-label">Predicted Earnings</div><div class="pi-val">${fmt(pol.predicted_earnings || 3800)}</div></div>
+    <div class="policy-item"><div class="pi-label">Zone Risk Factor</div><div class="pi-val">${pol.zone_risk || 1.0}×</div></div>
+    <div class="policy-item"><div class="pi-label">Seasonal Factor</div><div class="pi-val">${pol.seasonal_factor || 1.0}×</div></div>
+    <div class="policy-item"><div class="pi-label">Loyalty Discount</div><div class="pi-val">${fmt(pol.loyalty_discount || 0)}</div></div>
+    <div class="policy-item"><div class="pi-label">Risk Score</div><div class="pi-val">${pol.risk_score || 50}/100</div></div>
+  `;
+
+  const breakdown = { 'Zone History': 18, 'Seasonal Factor': 12, 'Live Weather': 6, 'Vehicle Exposure': 9, 'Platform Pressure': 7 };
+  document.getElementById('riskBreakdown').innerHTML = Object.entries(breakdown).map(([k,v]) => `
+    <div class="risk-bar-wrap">
+      <div class="risk-bar-label"><span>${k}</span><span>${v}/30</span></div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${(v/30)*100}%"></div></div>
+    </div>
+  `).join('');
+}
+
+// ─── PAYOUT ──────────────────────────────────────────────────────
+async function runPayout() {
+  let res = await api('POST', '/weekly-payout', { worker_id: state.workerId });
+  if (!res) res = demoPayoutResult();
+  if (res.processed === 0 || (!res.payouts?.length && !res.payout)) {
+    notify('ℹ️', 'No Payouts', 'No approved claims found this week.', 'var(--muted2)');
+    return;
+  }
+  const payout = res.payouts?.[0] || res;
+  notify('💸', 'Payout Processed!', `${fmt(payout.final_payout || 200)} credited via UPI · Ref: ${payout.upi_ref || 'UPI' + Date.now()}`, 'var(--green)');
+  loadDashClaims(); loadWeekTotal();
+}
+
+function demoPayoutResult() {
+  return { processed: 1, payouts: [{ final_payout: 200, upi_ref: 'UPI' + Date.now() }] };
+}
+
+// ─── SIMULATOR ───────────────────────────────────────────────────
+const SIM_MAP = {
+  rain:  { simulate_rain: 85, label: 'Heavy Rain (85 mm/hr)', icon: '🌧️', color: 'var(--indigo)' },
+  heat:  { simulate_temp: 43, label: 'Extreme Heat (43°C)', icon: '🌡️', color: 'var(--amber)' },
+  aqi:   { simulate_aqi: 320, label: 'Severe AQI (320)', icon: '😷', color: 'var(--red)' },
+  flood: { simulate_rain: 160, label: 'Urban Flood Alert', icon: '🌊', color: '#06B6D4' },
+};
+
+async function simulateTrigger(type) {
+  if (!state.workerId) { notify('⚠️','No Worker','Register first.', 'var(--amber)'); return; }
+  if (!state.shiftActive) { notify('⚠️','No Active Shift','Start a shift first to generate claims.', 'var(--amber)'); return; }
+
+  const sim = SIM_MAP[type];
+  const log = document.getElementById('simLog');
+
+  const entry = document.createElement('div');
+  entry.className = 'claim-item';
+  entry.innerHTML = `<div class="claim-icon rain">${sim.icon}</div>
+    <div class="claim-details"><div class="claim-trigger">Simulating ${sim.label}…</div>
+    <div class="claim-meta"><span class="spinner"></span></div></div>`;
+  if (log.querySelector('.empty-state')) log.innerHTML = '';
+  log.prepend(entry);
+
+  let res = await api('POST', '/trigger-event', { worker_id: state.workerId, ...sim });
+  if (!res) res = demoTriggerResult(sim);
+
+  entry.remove();
+
+  const resultEl = document.createElement('div');
+  resultEl.className = 'claim-item';
+  if (res.claim_generated && res.claims?.length) {
+    const c = res.claims[0];
+    resultEl.innerHTML = `
+      <div class="claim-icon rain">${sim.icon}</div>
+      <div class="claim-details">
+        <div class="claim-trigger">${sim.label}</div>
+        <div class="claim-meta">Claim ${c.status} · ${c.hours_disrupted}h · Fraud: ${c.fraud_score}/100 · ${fmt(c.base_amount)} base</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="claim-amount">${fmt(c.final_amount)}</div>
+        <div class="pill pill-approved">${c.status}</div>
+      </div>`;
+    notify(sim.icon, 'Claim Generated!', `${sim.label} — ${fmt(c.final_amount)} approved. Paid Friday.`, sim.color);
+    loadDashClaims(); loadWeekTotal();
+  } else {
+    resultEl.innerHTML = `
+      <div class="claim-icon heat">⚡</div>
+      <div class="claim-details">
+        <div class="claim-trigger">${sim.label}</div>
+        <div class="claim-meta">${res.message || 'No claim generated'}</div>
+      </div>`;
+    notify('ℹ️', 'No Claim', res.message || 'Trigger fired but conditions not met.', 'var(--muted2)');
+  }
+  log.prepend(resultEl);
+}
+
+function demoTriggerResult(sim) {
+  const earnings = state.policy?.predicted_earnings || 3800;
+  const mult = sim.simulate_rain > 150 ? 1.5 : 1.0;
+  const hours = 1.5;
+  const amount = Math.round(0.5 * (earnings / 6) * hours * mult);
+  return {
+    triggered: true, claim_generated: true,
+    claims: [{
+      trigger: sim.label, trigger_type: 'HEAVY_RAIN',
+      hours_disrupted: hours, base_amount: amount,
+      final_amount: amount, fraud_score: 12,
+      status: 'APPROVED', paid: 'Friday 23:59'
+    }],
+    message: `${sim.label} — claim approved.`
+  };
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+(function init() {
+  const saved = JSON.parse(localStorage.getItem('gigshield_worker') || 'null');
+  if (saved) {
+    state.workerId = saved.id; state.workerName = saved.name;
+    state.city = saved.city; state.plan = saved.plan;
+    document.getElementById('regModal').classList.add('hidden');
+    updateSidebar(); loadDashboard();
+  }
+})();
+</script>
+</body>
+</html>
