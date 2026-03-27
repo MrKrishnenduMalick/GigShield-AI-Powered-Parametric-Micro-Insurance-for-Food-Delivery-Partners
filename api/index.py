@@ -1,6 +1,9 @@
-# 🚀 GigShield Final Backend (Submission Ready)
+# 🚀 GigShield Final Backend (Fully Corrected)
 
-import os, random, hashlib, time
+import os
+import random
+import hashlib
+import time
 from datetime import datetime, timedelta
 
 from fastapi import FastAPI, HTTPException, Depends
@@ -13,7 +16,6 @@ from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-import requests
 import jwt
 
 # ───────── CONFIG ─────────
@@ -23,25 +25,28 @@ JWT_SECRET = "gigshield_secret"
 
 # ───────── DB SETUP ─────────
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
 # ───────── MODELS ─────────
 
 class User(Base):
-**tablename** = "users"
-id = Column(Integer, primary_key=True)
-phone = Column(String, unique=True)
-name = Column(String)
-city = Column(String)
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    phone = Column(String, unique=True)
+    name = Column(String)
+    city = Column(String)
+
 
 class Claim(Base):
-**tablename** = "claims"
-id = Column(Integer, primary_key=True)
-user_id = Column(Integer)
-amount = Column(Float)
-status = Column(String)
+    __tablename__ = "claims"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    amount = Column(Float)
+    status = Column(String)
 
 Base.metadata.create_all(bind=engine)
 
@@ -58,175 +63,184 @@ allow_headers=["*"],
 
 security = HTTPBearer(auto_error=False)
 
-# ───────── ERROR HANDLING ─────────
+# ───────── ERROR HANDLER ─────────
 
 @app.exception_handler(Exception)
 async def global_exception(request: Request, exc: Exception):
-return JSONResponse(status_code=500, content={
-"success": False,
-"error": str(exc)
-})
+    return JSONResponse(
+status_code=500,
+content={"success": False, "error": str(exc)}
+)
 
 # ───────── OTP STORE ─────────
 
 OTP_STORE = {}
 
 def generate_otp(phone):
-otp = str(random.randint(100000, 999999))
-OTP_STORE[phone] = {"otp": otp, "exp": time.time() + 300}
-return otp
+    otp = str(random.randint(100000, 999999))
+    OTP_STORE[phone] = {"otp": otp, "exp": time.time() + 300}
+    return otp
 
 def verify_otp(phone, otp):
-rec = OTP_STORE.get(phone)
-return rec and rec["otp"] == otp and time.time() < rec["exp"]
+    rec = OTP_STORE.get(phone)
+
+    if not rec:
+        return False
+
+    return rec["otp"] == otp and time.time() < rec["exp"]
 
 # ───────── JWT ─────────
 
 def create_token(user_id):
-payload = {
-"user_id": user_id,
-"exp": datetime.utcnow() + timedelta(days=7)
-}
-return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + timedelta(days=7)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
 
 def get_user(creds: HTTPAuthorizationCredentials = Depends(security)):
-if not creds:
-raise HTTPException(401, "Unauthorized")
+    if not creds:
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
-```
-try:
-    data = jwt.decode(creds.credentials, JWT_SECRET, algorithms=["HS256"])
-    return data["user_id"]
-except:
-    raise HTTPException(401, "Invalid token")
-```
+    try:
+        data = jwt.decode(creds.credentials, JWT_SECRET, algorithms=["HS256"])
+        return data["user_id"]
+    except:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-# ───────── WEATHER (SAFE MOCK) ─────────
+# ───────── WEATHER (MOCK) ─────────
 
 def get_weather(city):
-try:
-return {
-"rain": random.randint(0, 120),
-"temp": random.randint(25, 45)
-}
-except:
-return {"rain": 50, "temp": 35}
+    return {
+        "rain": random.randint(0, 120),
+        "temp": random.randint(25, 45)
+    }
 
-# ───────── AI LOGIC (SIMPLE) ─────────
+# ───────── AI LOGIC ─────────
 
-def predict_risk(weather):
-if weather["rain"] > 80 or weather["temp"] > 42:
-return 1
-return 0
+def get_weather(city):
+    return {
+        "rain": random.randint(0, 120),
+        "temp": random.randint(25, 45)
+    }
 
 # ───────── ROUTES ─────────
 
-@app.get("/api/health")
-def health():
-return {"success": True, "status": "ok"}
+def predict_risk(weather):
+    if weather["rain"] > 80 or weather["temp"] > 42:
+        return 1
+    return 0
 
 # 🔐 AUTH
 
 @app.post("/api/auth/send-otp")
 def send_otp(data: dict):
-otp = generate_otp(data["phone"])
-return {"success": True, "otp": otp}
+    phone = data.get("phone")
+
+    if not phone:
+        raise HTTPException(status_code=400, detail="Phone required")
+
+    otp = generate_otp(phone)
+    return {"success": True, "otp": otp}
+
 
 @app.post("/api/auth/verify-otp")
 def verify_otp_api(data: dict):
-if not verify_otp(data["phone"], data["otp"]):
-raise HTTPException(400, "Invalid OTP")
+    phone = data.get("phone")
+    otp = data.get("otp")
 
-```
-db = SessionLocal()
-user = db.query(User).filter(User.phone == data["phone"]).first()
+    if not verify_otp(phone, otp):
+        raise HTTPException(status_code=400, detail="Invalid OTP")
 
-if user:
-    token = create_token(user.id)
-    return {"success": True, "token": token}
+    db = SessionLocal()
+    user = db.query(User).filter(User.phone == phone).first()
 
-return {"success": True, "new_user": True}
-```
+    if user:
+        token = create_token(user.id)
+        return {"success": True, "token": token}
+
+    return {"success": True, "new_user": True}
+
 
 @app.post("/api/auth/register")
 def register(data: dict):
-db = SessionLocal()
+    db = SessionLocal()
 
-```
-user = User(
-    phone=data["phone"],
-    name=data["name"],
-    city=data["city"]
-)
+    phone = data.get("phone")
+    name = data.get("name")
+    city = data.get("city")
 
-db.add(user)
-db.commit()
-db.refresh(user)
+    if not phone or not name or not city:
+        raise HTTPException(status_code=400, detail="Missing fields")
 
-token = create_token(user.id)
-return {"success": True, "token": token}
-```
+    user = User(phone=phone, name=name, city=city)
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_token(user.id)
+
+    return {"success": True, "token": token}
 
 # ⚡ CLAIM ENGINE
 
 @app.post("/api/trigger")
 def trigger(user_id=Depends(get_user)):
-db = SessionLocal()
-user = db.query(User).get(user_id)
+    db = SessionLocal()
 
-```
-weather = get_weather(user.city)
-risk = predict_risk(weather)
+    user = db.query(User).filter(User.id == user_id).first()
 
-if risk == 0:
-    return {"success": True, "message": "No claim triggered"}
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-amount = 400 if weather["rain"] > 80 else 300
+    weather = get_weather(user.city)
+    risk = predict_risk(weather)
 
-claim = Claim(
-    user_id=user_id,
-    amount=amount,
-    status="APPROVED"
-)
+    if risk == 0:
+        return {"success": True, "message": "No claim triggered"}
 
-db.add(claim)
-db.commit()
+    amount = 400 if weather["rain"] > 80 else 300
 
-return {"success": True, "amount": amount}
-```
+    claim = Claim(user_id=user_id, amount=amount, status="APPROVED")
+
+    db.add(claim)
+    db.commit()
+
+    return {"success": True, "amount": amount}
 
 # 💰 PAYOUT
 
 @app.post("/api/payout")
 def payout(user_id=Depends(get_user)):
-db = SessionLocal()
+    db = SessionLocal()
 
-```
-claims = db.query(Claim).filter(
-    Claim.user_id == user_id,
-    Claim.status == "APPROVED"
-).all()
+    claims = db.query(Claim).filter(
+        Claim.user_id == user_id,
+        Claim.status == "APPROVED"
+    ).all()
 
-total = sum(c.amount for c in claims)
+    total = sum(c.amount for c in claims)
 
-return {"success": True, "payout": total}
-```
+    return {"success": True, "payout": total}
 
 # 👤 PROFILE
 
 @app.get("/api/me")
 def me(user_id=Depends(get_user)):
-db = SessionLocal()
-user = db.query(User).get(user_id)
+    db = SessionLocal()
 
-```
-weather = get_weather(user.city)
+    user = db.query(User).filter(User.id == user_id).first()
 
-return {
-    "user": {
-        "name": user.name,
-        "city": user.city
-    },
-    "weather": weather
-}
-```
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    weather = get_weather(user.city)
+
+    return {
+        "user": {
+            "name": user.name,
+            "city": user.city
+        },
+        "weather": weather
+    }
