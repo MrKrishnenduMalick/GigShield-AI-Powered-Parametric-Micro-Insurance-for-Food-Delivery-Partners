@@ -1,9 +1,0 @@
-# 🚀 GigShield Backend Requirements
-
-fastapi
-uvicorn
-sqlalchemy
-psycopg2-binary
-requests
-PyJWT
-joblib
