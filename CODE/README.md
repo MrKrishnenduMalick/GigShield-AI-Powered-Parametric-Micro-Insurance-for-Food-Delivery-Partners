@@ -100,9 +100,9 @@ No database setup needed — all data is in-memory (resets on restart).
 
 | Time | Event |
 |------|-------|
-| **Saturday 00:00** | Week resets. Earnings predicted. Policy activated. |
-| **Mon–Fri** | Weather checked. Active shifts monitored. Claims auto-generated. |
-| **Friday 23:59** | All approved claims paid. UPI payout batch runs. |
+| Saturday 00:00 | Week resets. Earnings predicted. Policy activated. |
+| Mon–Fri | Weather checked. Active shifts monitored. Claims auto-generated. |
+| Friday 23:59 | All approved claims paid. UPI payout batch runs. |
 
 ### Payout Formula
 
