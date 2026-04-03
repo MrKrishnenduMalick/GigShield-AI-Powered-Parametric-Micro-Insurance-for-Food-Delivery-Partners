@@ -1,7 +1,7 @@
 # 🛡️ GigShield — AI-Powered Parametric Micro-Insurance
 
 > Protecting India's delivery backbone, one week at a time.
-> **Guidewire DEVTrails 2026 · Phase 2**
+> Guidewire DEVTrails 2026 · Phase 2
 
 ---
 
@@ -12,10 +12,13 @@ cd CODE
 uvicorn main:app --reload
 ```
 
-Open in browser: **http://localhost:8000**
-API docs: **http://localhost:8000/docs**
-Dashboard: open `dashboard.html` directly in your browser
+The FastAPI backend will start at http://127.0.0.1:8000
+For the Dashboard:
 
+Right-click on dashboard.html → Select "Open with Live Server"
+
+It will automatically open in your browser (usually at http://127.0.0.1:5500).
+API docs: http://localhost:8000/docs
 ---
 
 ## 📁 Project Structure
