@@ -28,7 +28,7 @@ to the worker's UPI account — no claim form, no waiting.
 
 | Layer         | Technology                           |
 | ------------- | ------------------------------------ |
-| Backend       | Java Spring Boot                     |
+| Backend       | Python FastAPI                     |
 | AI Service    | Python FastAPI                       |
 | Database      | PostgreSQL                           |
 | Frontend      | HTML5 / CSS3 / Vanilla JS            |
